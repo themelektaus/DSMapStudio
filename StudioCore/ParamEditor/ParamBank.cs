@@ -1158,11 +1158,31 @@ namespace StudioCore.ParamEditor
                 // Write all the params out loose
                 foreach (var p in _params)
                 {
+                    if (SaveParamsDS2_Process(p.Key, p.Value))
+                        continue;
+
                     Utils.WriteWithBackup(dir, mod, $@"Param\{p.Key}.param", p.Value);
                 }
 
             }
             Utils.WriteWithBackup(dir, mod, @"enc_regulation.bnd.dcx", paramBnd);
+        }
+
+        private bool SaveParamsDS2_Process(string paramName, Param param)
+        {
+            if (!CFG.Current.PreventOverrideLocations)
+                return true;
+
+            // TODO: Keep original position (X,Y,Z)
+            //       Maybe by loading old Params and take those values from there
+
+            if (param.ParamType == "GENERAL_LOCATION_EVENT_PARAM_ST")
+                return false;
+
+            if (param.ParamType == "GENERATOR_LOCATION_PARAM")
+                return false;
+
+            return true;
         }
 
         private void SaveParamsDS3(bool loose)

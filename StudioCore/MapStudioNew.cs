@@ -75,6 +75,7 @@ namespace StudioCore
 
         private AssetLocator _assetLocator;
         private Editor.ProjectSettings _projectSettings = null;
+        private string _projectFilename = null;
 
         private NewProjectOptions _newProjectOptions = new NewProjectOptions();
 
@@ -89,7 +90,7 @@ namespace StudioCore
         private bool _showImGuiDebugLogWindow = false;
         private bool _showImGuiStackToolWindow = false;
 
-        public MapStudioNew()
+        public MapStudioNew(string[] args)
         {
             CFG.AttemptLoadOrDefault();
 
@@ -158,6 +159,14 @@ namespace StudioCore
 
             var style = ImGui.GetStyle();
             style.TabBorderSize = 0;
+
+            var projectFile = args.FirstOrDefault();
+            if (!string.IsNullOrEmpty(projectFile) && File.Exists(projectFile))
+            {
+                var project = Editor.ProjectSettings.Deserialize(projectFile);
+                AttemptLoadProject(project, projectFile, false);
+                return;
+            }
 
             if (CFG.Current.LastProjectFile != null && CFG.Current.LastProjectFile != "")
             {
@@ -601,8 +610,10 @@ namespace StudioCore
                         File.Copy(Path.Join(settings.GameRoot, "oo2core_6_win64.dll"), Path.Join(Path.GetFullPath("."), "oo2core_6_win64.dll"));
                     }
                     _projectSettings = settings;
+                    _projectFilename = filename;
                     ChangeProjectSettings(_projectSettings, Path.GetDirectoryName(filename), options);
                     CFG.Current.LastProjectFile = filename;
+                    CFG.Current.PreventOverrideLocations = false;
                     _window.Title = $"{_programTitle}  -  {_projectSettings.ProjectName}";
 
                     if (updateRecents)
@@ -653,6 +664,12 @@ namespace StudioCore
                     System.Windows.Forms.MessageBoxButtons.OK,
                     System.Windows.Forms.MessageBoxIcon.Warning);
             }
+        }
+
+        private void ReloadProject()
+        {
+            var settings = Editor.ProjectSettings.Deserialize(_projectFilename);
+            AttemptLoadProject(settings, _projectFilename, false);
         }
 
         private void SaveFocusedEditor()
@@ -764,6 +781,10 @@ namespace StudioCore
                             var settings = Editor.ProjectSettings.Deserialize(browseDlg.FileName);
                             AttemptLoadProject(settings, browseDlg.FileName);
                         }
+                    }
+                    if (ImGui.MenuItem("Reload Project", KeyBindings.Current.Core_ReloadProject.HintText, false, Editor.TaskManager.GetLiveThreads().Count == 0 && _projectFilename is not null))
+                    {
+                        ReloadProject();
                     }
                     if (ImGui.BeginMenu("Recent Projects", Editor.TaskManager.GetLiveThreads().Count == 0 && CFG.Current.RecentProjects.Count > 0))
                     {
@@ -1338,6 +1359,8 @@ namespace StudioCore
             // Global shortcut keys
             if (!_msbEditor.Viewport.ViewportSelected)
             {
+                if (InputTracker.GetKeyDown(KeyBindings.Current.Core_ReloadProject))
+                    ReloadProject();
                 if (InputTracker.GetKeyDown(KeyBindings.Current.Core_SaveCurrentEditor))
                     SaveFocusedEditor();
                 if (InputTracker.GetKeyDown(KeyBindings.Current.Core_SaveAllEditors))

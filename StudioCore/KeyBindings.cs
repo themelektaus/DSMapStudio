@@ -68,6 +68,7 @@ namespace StudioCore
 #pragma warning restore IDE0051
 
             // Core
+            public KeyBind Core_ReloadProject = new(Key.F9);
             public KeyBind Core_SaveCurrentEditor = new(Key.S, true);
             public KeyBind Core_SaveAllEditors = new();
             public KeyBind Core_Undo = new(Key.Z, true);

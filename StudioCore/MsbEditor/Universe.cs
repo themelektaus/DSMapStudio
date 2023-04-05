@@ -369,6 +369,8 @@ namespace StudioCore.MsbEditor
 
         public void LoadDS2Generators(string mapid, Map map)
         {
+            CFG.Current.PreventOverrideLocations = true;
+
             Dictionary<long, Param.Row> registParams = new Dictionary<long, Param.Row>();
             Dictionary<long, MergedParamRow> generatorParams = new Dictionary<long, MergedParamRow>();
             Dictionary<long, Entity> generatorObjs = new Dictionary<long, Entity>();

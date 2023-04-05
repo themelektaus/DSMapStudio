@@ -32,7 +32,7 @@ namespace DSMapStudio
 
             Directory.SetCurrentDirectory(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location));
 
-            var mapStudio = new MapStudioNew();
+            var mapStudio = new MapStudioNew(args);
 #if !DEBUG
             try
             {
